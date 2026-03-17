@@ -1,672 +1,891 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>banksy // virus4d</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
   <style>
-    :root {
-      --red: #cc0000; --red-dim: #880000;
-      --bg: #000000; --bg2: #080808;
-      --border: #1a1a1a; --text: #666666; --text-bright: #cccccc;
-      --green: #00cc44; --orange: #cc6600;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:var(--bg); color:var(--text); font-family:'Share Tech Mono',monospace; min-height:100vh; }
-    body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px); pointer-events:none; z-index:999; }
-    .container { max-width:900px; margin:0 auto; padding:36px 24px; }
-
-    header { margin-bottom:40px; border-bottom:1px solid var(--border); padding-bottom:20px; }
-    .logo { font-family:'Orbitron',monospace; font-size:24px; font-weight:900; color:var(--red); letter-spacing:3px; animation:flicker 6s infinite; }
-    .tagline { font-size:10px; color:#222; letter-spacing:3px; margin-top:5px; }
-    .badges { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-    .badge { font-size:9px; letter-spacing:2px; padding:3px 10px; border:1px solid #0052ff44; color:#0052ff; }
-    .badge.red { border-color:#cc000044; color:var(--red); }
-    @keyframes flicker { 0%,94%,100%{opacity:1} 95%{opacity:.3} 96%{opacity:1} 98%{opacity:.5} 99%{opacity:1} }
-
-    .input-section { margin-bottom:28px; }
-    .section-label { font-size:9px; color:#333; letter-spacing:3px; margin-bottom:10px; }
-    .prompt-line { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-    .prompt-label { color:var(--red); font-size:12px; white-space:nowrap; min-width:80px; }
-    .input-wrapper { display:flex; flex:1; border:1px solid #1a1a1a; background:var(--bg2); }
-    .input-wrapper:focus-within { border-color:var(--red-dim); }
-    input[type="text"], textarea { flex:1; background:transparent; border:none; outline:none; color:var(--text-bright); font-family:'Share Tech Mono',monospace; font-size:12px; padding:13px 14px; letter-spacing:1px; resize:none; }
-    input::placeholder, textarea::placeholder { color:#222; }
-    textarea { min-height:70px; width:100%; border:1px solid #1a1a1a; background:var(--bg2); }
-    textarea:focus { border-color:var(--red-dim); outline:none; }
-
-    .hint { font-size:10px; color:#222; letter-spacing:1px; margin-top:4px; margin-bottom:16px; }
-
-    button#generate-btn { background:var(--red); border:none; color:#000; font-family:'Orbitron',monospace; font-size:11px; font-weight:700; letter-spacing:2px; padding:14px 32px; cursor:pointer; transition:background 0.15s; width:100%; margin-top:8px; }
-    button#generate-btn:hover { background:#ff0000; }
-    button#generate-btn:disabled { background:#111; color:#333; cursor:not-allowed; }
-
-    #status-bar { display:none; font-size:10px; color:var(--red); letter-spacing:2px; margin-bottom:16px; animation:blink 1s infinite; }
-    #error-box { display:none; background:rgba(204,0,0,0.05); border:1px solid var(--red-dim); color:var(--red); font-size:11px; padding:12px 16px; margin-bottom:20px; letter-spacing:1px; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-    /* CANVAS */
-    #art-section { display:none; margin-bottom:28px; }
-    .art-container { position:relative; background:#fff; border:4px solid #000; }
-    canvas { display:block; width:100%; }
-    .art-actions { display:flex; gap:8px; margin-top:10px; }
-    .btn-action { background:transparent; border:1px solid var(--border); color:#333; font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; padding:10px 20px; cursor:pointer; transition:all 0.15s; flex:1; }
-    .btn-action:hover { border-color:var(--red); color:var(--red); }
-    .btn-action.primary { border-color:var(--red); color:var(--red); }
-
-    /* ANALYSIS */
-    #analysis-section { display:none; margin-bottom:28px; }
-    .analysis-box { background:var(--bg2); border-left:3px solid var(--red); padding:16px; }
-    #analysis-text { font-size:11px; color:var(--text); line-height:1.8; white-space:pre-wrap; }
-
-    /* WALLET INFO */
-    #wallet-section { display:none; margin-bottom:28px; }
-    .wallet-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
-    .stat-card { background:var(--bg2); padding:14px; border-left:2px solid var(--border); }
-    .stat-card label { font-size:8px; color:#333; letter-spacing:2px; display:block; margin-bottom:6px; }
-    .stat-card .val { font-family:'Orbitron',monospace; font-size:12px; color:var(--text-bright); }
-
-    footer { margin-top:40px; padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:9px; color:#1a1a1a; letter-spacing:2px; }
+    :root{--red:#cc0000;--red-dim:#880000;--bg:#000;--bg2:#080808;--border:#1a1a1a;--text:#666;--bright:#ccc;--green:#00cc44}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none;z-index:999}
+    .wrap{max-width:900px;margin:0 auto;padding:36px 24px}
+    header{margin-bottom:40px;border-bottom:1px solid var(--border);padding-bottom:20px}
+    .logo{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--red);letter-spacing:3px;animation:flicker 6s infinite}
+    .logo span{color:#222}
+    .tagline{font-size:10px;color:#222;letter-spacing:3px;margin-top:5px}
+    .badges{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .badge{font-size:9px;letter-spacing:2px;padding:3px 10px;border:1px solid #0052ff44;color:#0052ff}
+    .badge.red{border-color:#cc000044;color:var(--red)}
+    @keyframes flicker{0%,94%,100%{opacity:1}95%{opacity:.3}96%{opacity:1}98%{opacity:.5}99%{opacity:1}}
+    .slabel{font-size:9px;color:#333;letter-spacing:3px;margin-bottom:10px}
+    .input-section{margin-bottom:28px}
+    .pline{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .plabel{color:var(--red);font-size:12px;white-space:nowrap;min-width:90px}
+    .iwrap{display:flex;flex:1;border:1px solid #1a1a1a;background:var(--bg2)}
+    .iwrap:focus-within{border-color:var(--red-dim)}
+    input[type=text]{flex:1;background:transparent;border:none;outline:none;color:var(--bright);font-family:'Share Tech Mono',monospace;font-size:12px;padding:13px 14px;letter-spacing:1px}
+    input::placeholder{color:#222}
+    textarea{width:100%;background:var(--bg2);border:1px solid #1a1a1a;outline:none;color:var(--bright);font-family:'Share Tech Mono',monospace;font-size:12px;padding:13px 14px;resize:none;min-height:80px}
+    textarea:focus{border-color:var(--red-dim)}
+    textarea::placeholder{color:#222}
+    .hint{font-size:10px;color:#222;letter-spacing:1px;margin-top:4px;margin-bottom:14px}
+    .or-divider{text-align:center;font-size:10px;color:#222;letter-spacing:3px;margin:16px 0}
+    #gen-btn{background:var(--red);border:none;color:#000;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;padding:14px 32px;cursor:pointer;transition:background .15s;width:100%;margin-top:8px}
+    #gen-btn:hover{background:#ff0000}
+    #gen-btn:disabled{background:#111;color:#333;cursor:not-allowed}
+    #status{display:none;font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:16px;animation:blink 1s infinite}
+    #errbox{display:none;background:rgba(204,0,0,.05);border:1px solid var(--red-dim);color:var(--red);font-size:11px;padding:12px 16px;margin-bottom:20px;letter-spacing:1px}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    #progress-wrap{display:none;margin-bottom:20px}
+    .prog-track{background:#111;height:2px}
+    .prog-fill{height:2px;background:var(--red);width:0%;transition:width .4s ease}
+    .prog-label{font-size:9px;color:#333;letter-spacing:2px;margin-top:6px}
+    #art-section{display:none;margin-bottom:28px}
+    .art-wrap{border:1px solid var(--border);overflow:hidden}
+    canvas{display:block;width:100%}
+    .art-actions{display:flex;gap:8px;margin-top:10px}
+    .btn-a{background:transparent;border:1px solid var(--border);color:#333;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:10px 20px;cursor:pointer;transition:all .15s;flex:1}
+    .btn-a:hover{border-color:var(--red);color:var(--red)}
+    .btn-a.p{border-color:var(--red);color:var(--red)}
+    #msg-section{display:none;margin-bottom:28px}
+    .msg-box{background:var(--bg2);border-left:3px solid var(--red);padding:16px}
+    .msg-head{font-size:9px;color:var(--red);letter-spacing:3px;margin-bottom:10px}
+    #msg-text{font-size:11px;color:var(--text);line-height:1.8}
+    footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:9px;color:#1a1a1a;letter-spacing:2px}
   </style>
 </head>
 <body>
-<div class="container">
+<div class="wrap">
 
   <header>
-    <div class="logo">BANKSY</div>
-    <div class="tagline">// arte crítica gerada por agentes on-chain · by virus4d</div>
+    <div class="logo">BANK<span>S</span>Y</div>
+    <div class="tagline">// ai-generated critical art · on-chain identity · by virus4d</div>
     <div class="badges">
       <span class="badge">BASE · ETHEREUM</span>
-      <span class="badge red">⬡ INSPIRED BY BANKSY</span>
+      <span class="badge red">⬡ GENERATIVE ART</span>
     </div>
   </header>
 
   <div class="input-section">
-    <div class="section-label">// FONTE DE INSPIRAÇÃO</div>
+    <div class="slabel">// CHOOSE YOUR INPUT — news, wallet, or both</div>
 
-    <div class="prompt-line">
-      <span class="prompt-label">$&gt; notícia</span>
-    </div>
-    <textarea id="news-input" placeholder="cole uma notícia, titular ou frase que te impacta... ex: 'banco central aumenta juros pela 5a vez' ou 'bitcoin atinge nova máxima enquanto inflação dispara'"></textarea>
-    <div class="hint">// o agente vai transformar essa notícia em crítica visual</div>
+    <textarea id="news-input" placeholder="paste a news headline or phrase... e.g. 'central bank raises rates again while poverty grows' — optional"></textarea>
+    <div class="hint">// the agent interprets the social critique and shapes the artwork</div>
 
-    <div class="prompt-line" style="margin-top:16px">
-      <span class="prompt-label">$&gt; wallet</span>
-      <div class="input-wrapper">
-        <input type="text" id="wallet-input" placeholder="0x endereço (opcional) — personaliza a obra com seus dados on-chain..." autocomplete="off" spellcheck="false"/>
+    <div class="or-divider">— OR COMBINE WITH —</div>
+
+    <div class="pline">
+      <span class="plabel">$&gt; wallet</span>
+      <div class="iwrap">
+        <input type="text" id="wallet-input" placeholder="0x address — your on-chain identity shapes the figure..." autocomplete="off" spellcheck="false"/>
       </div>
     </div>
-    <div class="hint">// opcional — sem wallet gera arte só pela notícia</div>
+    <div class="hint">// wallet defines your figure: whale · trader · holder · bot · anonymous</div>
 
-    <button id="generate-btn" onclick="generateArt()">⬡ GERAR OBRA</button>
+    <button id="gen-btn" onclick="generateArt()">⬡ GENERATE ARTWORK</button>
   </div>
 
-  <div id="status-bar"></div>
-  <div id="error-box"></div>
+  <div id="status"></div>
+  <div id="errbox"></div>
 
-  <!-- WALLET INFO -->
-  <div id="wallet-section">
-    <div class="section-label">// IDENTIDADE ON-CHAIN</div>
-    <div class="wallet-grid">
-      <div class="stat-card"><label>SALDO</label><div class="val" id="w-balance">—</div></div>
-      <div class="stat-card"><label>TRANSAÇÕES</label><div class="val" id="w-txcount">—</div></div>
-      <div class="stat-card"><label>PERFIL</label><div class="val" style="font-size:10px" id="w-profile">—</div></div>
-    </div>
+  <div id="progress-wrap">
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-label" id="prog-label">// reading on-chain data...</div>
   </div>
 
-  <!-- ART CANVAS -->
   <div id="art-section">
-    <div class="section-label">// OBRA GERADA</div>
-    <div class="art-container">
-      <canvas id="art-canvas" width="800" height="600"></canvas>
+    <div class="slabel">// GENERATED ARTWORK</div>
+    <div class="art-wrap">
+      <canvas id="art-canvas" width="900" height="620"></canvas>
     </div>
     <div class="art-actions">
-      <button class="btn-action" onclick="generateArt()">⬡ GERAR NOVA VERSÃO</button>
-      <button class="btn-action primary" onclick="downloadArt()">⬡ BAIXAR OBRA</button>
+      <button class="btn-a" onclick="regenArt()">⬡ NEW VERSION</button>
+      <button class="btn-a p" onclick="downloadArt()">⬡ DOWNLOAD</button>
     </div>
   </div>
 
-  <!-- ANALYSIS -->
-  <div id="analysis-section">
-    <div class="section-label">// MENSAGEM DO AGENTE</div>
-    <div class="analysis-box">
-      <div id="analysis-text"></div>
+  <div id="msg-section">
+    <div class="msg-box">
+      <div class="msg-head">// AGENT'S CRITIQUE</div>
+      <div id="msg-text"></div>
     </div>
   </div>
 
   <footer>
-    <span>banksy // virus4d · arte generativa on-chain</span>
+    <span>banksy // virus4d · generative critical art</span>
     <span>groq llm · base rpc · canvas api</span>
   </footer>
-
 </div>
 
 <script>
-  const GROQ_KEY     = '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';
-  const BASESCAN_KEY = 'XH56ZMYSJTI64KY3V14NMWH7ZV6DFU951Z';
-  const RPC          = 'https://mainnet.base.org';
+const GROQ_KEY = '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';
+const BASESCAN_KEY = 'XH56ZMYSJTI64KY3V14NMWH7ZV6DFU951Z';
+const RPC = 'https://mainnet.base.org';
 
-  let currentSeed = 0;
-  let currentArtData = null;
+let currentArtData = null;
+let noiseSeed = 0;
 
-  function setStatus(msg, show) { const el=document.getElementById('status-bar'); el.textContent=msg; el.style.display=show?'block':'none'; }
-  function showError(msg) { const el=document.getElementById('error-box'); el.textContent='// ERRO: '+msg; el.style.display='block'; }
-  function hideError() { document.getElementById('error-box').style.display='none'; }
+function setStatus(msg,show){const e=document.getElementById('status');e.textContent=msg;e.style.display=show?'block':'none'}
+function showErr(msg){const e=document.getElementById('errbox');e.textContent='// ERROR: '+msg;e.style.display='block'}
+function hideErr(){document.getElementById('errbox').style.display='none'}
+function setProgress(pct,label){
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent='// '+label;
+}
 
-  // Seeded random — mesma wallet = mesma estrutura, seed diferente = detalhes únicos
-  function seededRand(seed) {
-    let s = seed;
-    return function() {
-      s = (s * 1664525 + 1013904223) & 0xffffffff;
-      return (s >>> 0) / 0xffffffff;
-    };
+function seededRand(seed){
+  let s=seed;
+  return()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff};
+}
+function walletToSeed(addr){
+  if(!addr)return Math.floor(Math.random()*999999);
+  let s=0;
+  for(let i=0;i<addr.length;i++){s=((s<<5)-s)+addr.charCodeAt(i);s|=0}
+  return Math.abs(s);
+}
+
+// ─── DRAWING ENGINE ──────────────────────────────────────────────
+
+function drawWallTexture(ctx,W,H,nr){
+  // Fundo — parede envelhecida
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#ede8df');
+  g.addColorStop(0.5,'#e8e3da');
+  g.addColorStop(1,'#ddd8ce');
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,W,H);
+
+  // Ruído de textura
+  for(let i=0;i<12000;i++){
+    const x=nr()*W, y=nr()*H;
+    const a=nr()*0.06;
+    const c=Math.floor(150+nr()*60);
+    ctx.fillStyle=`rgba(${c},${c-10},${c-20},${a})`;
+    ctx.fillRect(x,y,nr()*3+0.5,nr()*3+0.5);
   }
-
-  function walletToSeed(addr) {
-    if (!addr) return Math.floor(Math.random() * 999999);
-    let seed = 0;
-    for (let i = 0; i < addr.length; i++) {
-      seed = ((seed << 5) - seed) + addr.charCodeAt(i);
-      seed |= 0;
-    }
-    return Math.abs(seed);
+  // Manchas de umidade
+  for(let i=0;i<6;i++){
+    const x=nr()*W, y=nr()*H;
+    const rx=nr()*120+40, ry=nr()*80+20;
+    const g2=ctx.createRadialGradient(x,y,0,x,y,rx);
+    g2.addColorStop(0,`rgba(160,150,130,${nr()*0.07})`);
+    g2.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g2;
+    ctx.beginPath();ctx.ellipse(x,y,rx,ry,nr()*Math.PI,0,Math.PI*2);ctx.fill();
   }
-
-  function drawBanksyArt(canvas, artData, noiseSeed) {
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width;
-    const H = canvas.height;
-    const rand = seededRand(artData.walletSeed);
-    const nrand = seededRand(noiseSeed);
-
-    // Background — textura de parede
-    ctx.fillStyle = '#f5f0e8';
-    ctx.fillRect(0, 0, W, H);
-
-    // Textura de parede (ruído)
-    for (let i = 0; i < 8000; i++) {
-      const x = nrand() * W;
-      const y = nrand() * H;
-      const size = nrand() * 3;
-      const alpha = nrand() * 0.08;
-      ctx.fillStyle = `rgba(${100+nrand()*50},${90+nrand()*40},${70+nrand()*40},${alpha})`;
-      ctx.fillRect(x, y, size, size);
-    }
-
-    // Manchas e imperfeições
-    for (let i = 0; i < 15; i++) {
-      const x = nrand() * W;
-      const y = nrand() * H;
-      ctx.beginPath();
-      ctx.arc(x, y, nrand() * 60 + 10, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(180,170,150,${nrand() * 0.05})`;
-      ctx.fill();
-    }
-
-    // Escolher composição baseada no perfil da wallet
-    const profile = artData.profile;
-    const theme = artData.theme;
-
-    // Elemento central — stencil baseado no perfil
-    drawCentralFigure(ctx, W, H, rand, nrand, profile, theme, artData);
-
-    // Mensagem crítica — texto spray
-    drawSprayText(ctx, W, H, nrand, artData.message, artData.subMessage);
-
-    // Detalhes Banksy — elementos extras
-    drawBanksyDetails(ctx, W, H, rand, nrand, theme);
-
-    // Assinatura
-    ctx.font = '11px Share Tech Mono';
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillText('virus4d · wallet-art · ' + (artData.wallet ? artData.wallet.slice(0,10)+'...' : 'anonymous'), 20, H - 15);
-  }
-
-  function drawCentralFigure(ctx, W, H, rand, nrand, profile, theme, artData) {
-    const cx = W * 0.35;
-    const cy = H * 0.5;
-
-    ctx.save();
-
-    // Sombra/spray base
-    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 200);
-    gradient.addColorStop(0, 'rgba(0,0,0,0.15)');
-    gradient.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(cx - 220, cy - 220, 440, 440);
-
-    // Figura baseada no perfil
-    if (profile === 'whale') {
-      drawWhale(ctx, cx, cy, rand);
-    } else if (profile === 'trader') {
-      drawTrader(ctx, cx, cy, rand);
-    } else if (profile === 'holder') {
-      drawHolder(ctx, cx, cy, rand);
-    } else if (profile === 'bot') {
-      drawBot(ctx, cx, cy, rand);
-    } else {
-      drawAnonymous(ctx, cx, cy, rand);
-    }
-
-    ctx.restore();
-  }
-
-  function drawWhale(ctx, cx, cy, rand) {
-    // Homem de terno com baleia
-    ctx.fillStyle = '#111';
-    // corpo
-    ctx.fillRect(cx - 30, cy - 60, 60, 80);
-    // cabeça
-    ctx.beginPath(); ctx.arc(cx, cy - 80, 28, 0, Math.PI * 2); ctx.fill();
-    // gravata
-    ctx.fillStyle = '#cc0000';
-    ctx.beginPath(); ctx.moveTo(cx - 5, cy - 60); ctx.lineTo(cx + 5, cy - 60); ctx.lineTo(cx + 2, cy - 20); ctx.lineTo(cx - 2, cy - 20); ctx.fill();
-    // baleia acima
-    ctx.fillStyle = '#333';
+  // Rachaduras finas
+  for(let i=0;i<4;i++){
+    ctx.strokeStyle=`rgba(150,140,120,${nr()*0.15})`;
+    ctx.lineWidth=nr()*1.5+0.3;
     ctx.beginPath();
-    ctx.ellipse(cx + 80, cy - 120, 70, 35, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    // cauda baleia
-    ctx.beginPath(); ctx.moveTo(cx + 145, cy - 110); ctx.lineTo(cx + 170, cy - 90); ctx.lineTo(cx + 155, cy - 125); ctx.fill();
-    // cifrao
-    ctx.fillStyle = '#cc0000';
-    ctx.font = 'bold 28px serif';
-    ctx.fillText('$', cx + 60, cy - 105);
-  }
-
-  function drawTrader(ctx, cx, cy, rand) {
-    // Figura com gráfico e máscara de gás
-    ctx.fillStyle = '#111';
-    // corpo
-    ctx.fillRect(cx - 28, cy - 55, 56, 75);
-    // cabeça
-    ctx.beginPath(); ctx.arc(cx, cy - 75, 26, 0, Math.PI * 2); ctx.fill();
-    // máscara de gás
-    ctx.fillStyle = '#555';
-    ctx.beginPath(); ctx.arc(cx, cy - 70, 20, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#333';
-    ctx.beginPath(); ctx.arc(cx, cy - 65, 8, 0, Math.PI * 2); ctx.fill();
-    // gráfico subindo
-    ctx.strokeStyle = '#cc0000'; ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(cx + 60, cy + 10);
-    ctx.lineTo(cx + 80, cy - 20);
-    ctx.lineTo(cx + 100, cy + 5);
-    ctx.lineTo(cx + 120, cy - 40);
-    ctx.lineTo(cx + 140, cy - 70);
+    let cx=nr()*W, cy=nr()*H;
+    ctx.moveTo(cx,cy);
+    for(let j=0;j<8;j++){cx+=nr()*40-20;cy+=nr()*30-10;ctx.lineTo(cx,cy);}
     ctx.stroke();
-    // seta
-    ctx.fillStyle = '#cc0000';
-    ctx.beginPath(); ctx.moveTo(cx + 135, cy - 85); ctx.lineTo(cx + 155, cy - 65); ctx.lineTo(cx + 125, cy - 65); ctx.fill();
   }
+}
 
-  function drawHolder(ctx, cx, cy, rand) {
-    // Figura abraçando cofre
-    ctx.fillStyle = '#111';
-    ctx.fillRect(cx - 28, cy - 50, 56, 70);
-    ctx.beginPath(); ctx.arc(cx, cy - 70, 25, 0, Math.PI * 2); ctx.fill();
-    // cofre
-    ctx.fillStyle = '#444';
-    ctx.fillRect(cx + 30, cy - 40, 55, 60);
-    ctx.fillStyle = '#cc0000';
-    ctx.beginPath(); ctx.arc(cx + 57, cy - 15, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.arc(cx + 57, cy - 15, 6, 0, Math.PI * 2); ctx.fill();
-    // braço abraçando
-    ctx.fillStyle = '#111';
+function drawSprayHalo(ctx,x,y,r,color,alpha){
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,color.replace(')',`,${alpha})`).replace('rgb','rgba'));
+  g.addColorStop(0.6,color.replace(')',`,${alpha*0.3})`).replace('rgb','rgba'));
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;
+  ctx.fillRect(x-r,y-r,r*2,r*2);
+}
+
+function applyStencilEffect(ctx,W,H,nr){
+  // Spray edges — bordes irregulares como stencil real
+  for(let i=0;i<300;i++){
+    const angle=nr()*Math.PI*2;
+    const dist=nr()*15;
+    const x=nr()*W, y=nr()*H;
+    ctx.fillStyle=`rgba(240,235,225,${nr()*0.4})`;
     ctx.beginPath();
-    ctx.moveTo(cx + 25, cy - 30);
-    ctx.quadraticCurveTo(cx + 45, cy - 50, cx + 60, cy - 40);
-    ctx.lineWidth = 12; ctx.strokeStyle = '#111'; ctx.stroke();
-  }
-
-  function drawBot(ctx, cx, cy, rand) {
-    // Robô com código
-    ctx.fillStyle = '#222';
-    ctx.fillRect(cx - 35, cy - 60, 70, 80);
-    ctx.fillStyle = '#111';
-    ctx.fillRect(cx - 25, cy - 80, 50, 30);
-    // olhos LED
-    ctx.fillStyle = '#cc0000';
-    ctx.beginPath(); ctx.arc(cx - 10, cy - 68, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx + 10, cy - 68, 7, 0, Math.PI * 2); ctx.fill();
-    // antena
-    ctx.strokeStyle = '#333'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(cx, cy - 80); ctx.lineTo(cx, cy - 110); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy - 113, 5, 0, Math.PI * 2); ctx.fillStyle = '#cc0000'; ctx.fill();
-    // código
-    ctx.font = '10px Share Tech Mono';
-    ctx.fillStyle = '#cc0000';
-    const lines = ['01001', '10110', '00111', '11001'];
-    lines.forEach((l, i) => ctx.fillText(l, cx + 50, cy - 40 + i * 14));
-  }
-
-  function drawAnonymous(ctx, cx, cy, rand) {
-    // Figura com capuz e spray
-    ctx.fillStyle = '#111';
-    // corpo
-    ctx.beginPath();
-    ctx.moveTo(cx - 35, cy + 20);
-    ctx.lineTo(cx - 40, cy - 20);
-    ctx.lineTo(cx - 20, cy - 60);
-    ctx.lineTo(cx + 20, cy - 60);
-    ctx.lineTo(cx + 40, cy - 20);
-    ctx.lineTo(cx + 35, cy + 20);
+    ctx.arc(x+Math.cos(angle)*dist,y+Math.sin(angle)*dist,nr()*2,0,Math.PI*2);
     ctx.fill();
-    // capuz
-    ctx.beginPath();
-    ctx.arc(cx, cy - 75, 30, 0, Math.PI * 2);
-    ctx.fill();
-    // sombra do rosto
-    ctx.fillStyle = '#333';
-    ctx.beginPath();
-    ctx.arc(cx, cy - 72, 20, 0.2, Math.PI - 0.2);
-    ctx.fill();
-    // lata de spray
-    ctx.fillStyle = '#555';
-    ctx.fillRect(cx + 38, cy - 30, 12, 30);
-    ctx.fillStyle = '#cc0000';
-    ctx.fillRect(cx + 36, cy - 35, 16, 8);
-    // spray saindo
-    for (let i = 0; i < 8; i++) {
-      ctx.beginPath();
-      ctx.arc(cx + 55 + rand()*20, cy - 30 + rand()*20, rand()*4+1, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(204,0,0,${0.3+rand()*0.5})`;
-      ctx.fill();
-    }
+  }
+}
+
+// Figura humana detalhada
+function drawDetailedFigure(ctx,cx,cy,profile,rand,nr){
+  const ink=(alpha=1)=>`rgba(20,18,15,${alpha})`;
+  const red=(alpha=1)=>`rgba(180,0,0,${alpha})`;
+
+  ctx.save();
+
+  // Sombra de spray
+  drawSprayHalo(ctx,cx,cy+20,180,'rgb(20,18,15)',0.12);
+
+  if(profile==='whale'){
+    drawWhale(ctx,cx,cy,rand,nr,ink,red);
+  } else if(profile==='trader'){
+    drawTrader(ctx,cx,cy,rand,nr,ink,red);
+  } else if(profile==='holder'){
+    drawHolder(ctx,cx,cy,rand,nr,ink,red);
+  } else if(profile==='bot'){
+    drawBot(ctx,cx,cy,rand,nr,ink,red);
+  } else {
+    drawAnonymous(ctx,cx,cy,rand,nr,ink,red);
   }
 
-  function drawSprayText(ctx, W, H, nrand, message, subMessage) {
-    // Área do texto — lado direito
-    const tx = W * 0.52;
+  ctx.restore();
+}
 
-    // Efeito spray — texto com borda difusa
-    ctx.save();
+function drawHumanBody(ctx,cx,cy,ink){
+  // Tronco
+  ctx.fillStyle=ink();
+  ctx.beginPath();
+  ctx.moveTo(cx-22,cy-55);
+  ctx.bezierCurveTo(cx-28,cy-30,cx-30,cy,cx-25,cy+50);
+  ctx.lineTo(cx+25,cy+50);
+  ctx.bezierCurveTo(cx+30,cy,cx+28,cy-30,cx+22,cy-55);
+  ctx.fill();
 
-    // Sombra spray
-    ctx.shadowColor = 'rgba(0,0,0,0.4)';
-    ctx.shadowBlur = 8;
+  // Pernas
+  ctx.beginPath();
+  ctx.moveTo(cx-18,cy+50);
+  ctx.bezierCurveTo(cx-22,cy+80,cx-20,cy+110,cx-18,cy+130);
+  ctx.lineTo(cx-8,cy+130);
+  ctx.bezierCurveTo(cx-10,cy+110,cx-8,cy+80,cx-2,cy+50);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx+18,cy+50);
+  ctx.bezierCurveTo(cx+22,cy+80,cx+20,cy+110,cx+18,cy+130);
+  ctx.lineTo(cx+8,cy+130);
+  ctx.bezierCurveTo(cx+10,cy+110,cx+8,cy+80,cx+2,cy+50);
+  ctx.fill();
 
-    // Mensagem principal — grande, impactante
-    const words = message.toUpperCase().split(' ');
-    let line = '';
-    let lines = [];
-    let maxWidth = W * 0.42;
+  // Sapatos
+  ctx.beginPath();ctx.ellipse(cx-13,cy+135,14,6,-.1,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx+13,cy+135,14,6,.1,0,Math.PI*2);ctx.fill();
+}
 
-    ctx.font = 'bold 36px Orbitron, monospace';
-    words.forEach(word => {
-      const test = line + (line ? ' ' : '') + word;
-      if (ctx.measureText(test).width > maxWidth && line) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = test;
-      }
-    });
-    if (line) lines.push(line);
+function drawHead(ctx,cx,cy,ink){
+  ctx.fillStyle=ink();
+  ctx.beginPath();ctx.ellipse(cx,cy-75,22,26,0,0,Math.PI*2);ctx.fill();
+  // Pescoço
+  ctx.fillRect(cx-8,cy-50,16,10);
+}
 
-    // Limitar a 3 linhas
-    lines = lines.slice(0, 3);
+function drawWhale(ctx,cx,cy,rand,nr,ink,red){
+  // Terno detalhado
+  drawHumanBody(ctx,cx,cy,ink);
+  drawHead(ctx,cx,cy,ink);
 
-    // Spray vermelho para mensagem principal
-    lines.forEach((l, i) => {
-      // Ruído no texto (Banksy feel)
-      const offsetX = (nrand() - 0.5) * 4;
-      const offsetY = (nrand() - 0.5) * 4;
+  // Gravata
+  ctx.fillStyle=red();
+  ctx.beginPath();
+  ctx.moveTo(cx-4,cy-50);ctx.lineTo(cx+4,cy-50);
+  ctx.lineTo(cx+6,cy-30);ctx.lineTo(cx,cy-5);ctx.lineTo(cx-6,cy-30);
+  ctx.fill();
 
-      ctx.fillStyle = 'rgba(180,0,0,0.15)';
-      ctx.font = 'bold 37px Orbitron, monospace';
-      ctx.fillText(l, tx + offsetX + 2, 160 + i * 48 + offsetY + 2);
+  // Lapela do terno
+  ctx.fillStyle=ink(0.15);
+  ctx.beginPath();ctx.moveTo(cx-22,cy-55);ctx.lineTo(cx-5,cy-45);ctx.lineTo(cx-15,cy-20);ctx.fill();
+  ctx.beginPath();ctx.moveTo(cx+22,cy-55);ctx.lineTo(cx+5,cy-45);ctx.lineTo(cx+15,cy-20);ctx.fill();
 
-      ctx.fillStyle = '#cc0000';
-      ctx.font = 'bold 36px Orbitron, monospace';
-      ctx.fillText(l, tx + offsetX, 160 + i * 48 + offsetY);
-    });
+  // Braços
+  ctx.fillStyle=ink();
+  ctx.beginPath();
+  ctx.moveTo(cx-22,cy-40);
+  ctx.bezierCurveTo(cx-50,cy-20,cx-65,cy+10,cx-60,cy+40);
+  ctx.lineTo(cx-50,cy+38);
+  ctx.bezierCurveTo(cx-55,cy+10,cx-40,cy-15,cx-14,cy-32);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx+22,cy-40);
+  ctx.bezierCurveTo(cx+50,cy-20,cx+65,cy+10,cx+60,cy+40);
+  ctx.lineTo(cx+50,cy+38);
+  ctx.bezierCurveTo(cx+55,cy+10,cx+40,cy-15,cx+14,cy-32);
+  ctx.fill();
 
-    // Linha divisória spray
-    const lineY = 160 + lines.length * 48 + 20;
-    ctx.strokeStyle = '#111';
-    ctx.lineWidth = 3 + nrand() * 2;
-    ctx.beginPath();
-    ctx.moveTo(tx, lineY);
-    ctx.lineTo(tx + maxWidth, lineY + (nrand()-0.5)*6);
-    ctx.stroke();
+  // Baleia acima flutuando
+  const wx=cx+120, wy=cy-140;
+  drawSprayHalo(ctx,wx,wy,100,'rgb(20,18,15)',0.08);
+  ctx.fillStyle=ink(0.9);
+  ctx.beginPath();
+  ctx.moveTo(wx-80,wy);
+  ctx.bezierCurveTo(wx-90,wy-40,wx-60,wy-60,wx,wy-55);
+  ctx.bezierCurveTo(wx+60,wy-50,wx+85,wy-25,wx+80,wy+5);
+  ctx.bezierCurveTo(wx+50,wy+30,wx-50,wy+30,wx-80,wy);
+  ctx.fill();
+  // Cauda
+  ctx.beginPath();
+  ctx.moveTo(wx+78,wy);
+  ctx.lineTo(wx+110,wy-20);ctx.lineTo(wx+105,wy+5);
+  ctx.lineTo(wx+115,wy+20);ctx.lineTo(wx+80,wy+8);
+  ctx.fill();
+  // Olho da baleia
+  ctx.fillStyle=red(0.9);
+  ctx.beginPath();ctx.arc(wx-40,wy-20,5,0,Math.PI*2);ctx.fill();
+  // Brilho no olho
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.beginPath();ctx.arc(wx-38,wy-22,2,0,Math.PI*2);ctx.fill();
 
-    // Sub mensagem — menor, preto
-    if (subMessage) {
-      const subWords = subMessage.split(' ');
-      let subLine = '';
-      let subLines = [];
-      ctx.font = '16px Share Tech Mono';
-      subWords.forEach(word => {
-        const test = subLine + (subLine ? ' ' : '') + word;
-        if (ctx.measureText(test).width > maxWidth && subLine) {
-          subLines.push(subLine);
-          subLine = word;
-        } else { subLine = test; }
-      });
-      if (subLine) subLines.push(subLine);
-      subLines = subLines.slice(0, 4);
-
-      subLines.forEach((l, i) => {
-        const ox = (nrand()-0.5)*2;
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.font = '15px Share Tech Mono';
-        ctx.fillText(l, tx + ox, lineY + 35 + i * 22 + ox);
-      });
-    }
-
-    ctx.restore();
+  // Moedas caindo
+  for(let i=0;i<5;i++){
+    const mx=cx-30+rand()*20+i*15;
+    const my=cy-160+rand()*30+i*20;
+    ctx.strokeStyle=ink(0.6);ctx.lineWidth=2;
+    ctx.beginPath();ctx.ellipse(mx,my,8,4,rand()*0.5,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=red(0.4);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(mx,my-3);ctx.lineTo(mx,my+3);ctx.stroke();
   }
+}
 
-  function drawBanksyDetails(ctx, W, H, rand, nrand, theme) {
-    // Ratos (clássico Banksy)
-    const numRats = Math.floor(2 + rand() * 3);
-    for (let i = 0; i < numRats; i++) {
-      const rx = 50 + nrand() * (W - 100);
-      const ry = H - 30 - nrand() * 60;
-      drawRat(ctx, rx, ry, nrand() > 0.5 ? 1 : -1);
-    }
+function drawTrader(ctx,cx,cy,rand,nr,ink,red){
+  drawHumanBody(ctx,cx,cy,ink);
 
-    // Balão coração (às vezes)
-    if (rand() > 0.5) {
-      drawBalloon(ctx, W * 0.15 + nrand() * 100, H * 0.2 + nrand() * 80, nrand);
-    }
+  // Máscara de gás detalhada
+  ctx.fillStyle=ink(0.85);
+  ctx.beginPath();ctx.ellipse(cx,cy-72,26,30,0,0,Math.PI*2);ctx.fill();
+  // Filtros
+  ctx.fillStyle=ink(0.6);
+  ctx.beginPath();ctx.ellipse(cx-14,cy-58,9,12,-.2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx+14,cy-58,9,12,.2,0,Math.PI*2);ctx.fill();
+  // Visor
+  ctx.fillStyle='rgba(80,200,255,0.25)';
+  ctx.beginPath();ctx.ellipse(cx,cy-78,18,10,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=ink(0.5);ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(cx,cy-78,18,10,0,0,Math.PI*2);ctx.stroke();
 
-    // Faixa amarela de "CAUTION" (às vezes)
-    if (rand() > 0.6) {
-      ctx.save();
-      ctx.globalAlpha = 0.15;
-      ctx.fillStyle = '#ffcc00';
-      ctx.rotate(-0.15);
-      for (let i = 0; i < 8; i++) {
-        if (i % 2 === 0) {
-          ctx.fillRect(-50 + i * 120, H * 0.7, 100, 30);
-        }
-      }
-      ctx.restore();
-    }
+  // Braço segurando gráfico
+  ctx.fillStyle=ink();
+  ctx.beginPath();
+  ctx.moveTo(cx+22,cy-30);
+  ctx.bezierCurveTo(cx+55,cy-20,cx+80,cy-10,cx+85,cy+10);
+  ctx.lineTo(cx+75,cy+14);
+  ctx.bezierCurveTo(cx+70,cy-5,cx+48,cy-14,cx+14,cy-22);
+  ctx.fill();
 
-    // Número do bloco ou dado on-chain como graffiti pequeno
-    ctx.font = '10px Share Tech Mono';
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.fillText('blk_' + Math.floor(nrand() * 99999999), 20, H - 30);
+  // Braço esquerdo
+  ctx.beginPath();
+  ctx.moveTo(cx-22,cy-30);
+  ctx.bezierCurveTo(cx-45,cy-15,cx-55,cy+5,cx-50,cy+30);
+  ctx.lineTo(cx-40,cy+28);
+  ctx.bezierCurveTo(cx-44,cy+5,cx-35,cy-12,cx-14,cy-22);
+  ctx.fill();
+
+  // Gráfico detalhado
+  const gx=cx+90, gy=cy-20;
+  ctx.fillStyle='rgba(240,235,220,0.9)';
+  ctx.fillRect(gx,gy-80,120,100);
+  ctx.strokeStyle=ink(0.2);ctx.lineWidth=1;
+  ctx.strokeRect(gx,gy-80,120,100);
+  // Linhas de grade
+  for(let i=1;i<4;i++){
+    ctx.strokeStyle=ink(0.06);ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(gx,gy-80+i*25);ctx.lineTo(gx+120,gy-80+i*25);ctx.stroke();
   }
-
-  function drawRat(ctx, x, y, dir) {
-    ctx.save();
-    ctx.fillStyle = '#222';
-    ctx.scale(dir, 1);
-    const rx = x * dir;
-    // corpo
-    ctx.beginPath(); ctx.ellipse(rx, y, 15, 8, 0, 0, Math.PI * 2); ctx.fill();
-    // cabeça
-    ctx.beginPath(); ctx.ellipse(rx + 16 * dir * dir, y - 2, 8, 6, 0, 0, Math.PI * 2); ctx.fill();
-    // orelha
-    ctx.beginPath(); ctx.arc(rx + 20 * dir * dir, y - 7, 3, 0, Math.PI * 2); ctx.fill();
-    // olho
-    ctx.fillStyle = '#cc0000';
-    ctx.beginPath(); ctx.arc(rx + 22 * dir * dir, y - 3, 1.5, 0, Math.PI * 2); ctx.fill();
-    // rabo
-    ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(rx - 14, y);
-    ctx.quadraticCurveTo(rx - 20, y - 10, rx - 10, y - 18);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawBalloon(ctx, x, y, nrand) {
-    ctx.save();
-    ctx.fillStyle = '#cc0000';
-    // coração
-    const s = 20;
-    ctx.beginPath();
-    ctx.moveTo(x, y + s * 0.3);
-    ctx.bezierCurveTo(x, y, x - s, y, x - s, y - s * 0.3);
-    ctx.bezierCurveTo(x - s, y - s * 0.8, x, y - s * 0.8, x, y - s * 0.3);
-    ctx.bezierCurveTo(x, y - s * 0.8, x + s, y - s * 0.8, x + s, y - s * 0.3);
-    ctx.bezierCurveTo(x + s, y, x, y, x, y + s * 0.3);
-    ctx.fill();
-    // fio
-    ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, y + s * 0.3); ctx.lineTo(x + (nrand()-0.5)*10, y + s * 0.3 + 60); ctx.stroke();
-    ctx.restore();
-  }
-
-  async function generateArt() {
-    const news = document.getElementById('news-input').value.trim();
-    const walletAddr = document.getElementById('wallet-input').value.trim();
-    const btn = document.getElementById('generate-btn');
-
-    if (!news) { showError('adicione uma notícia ou frase para gerar a arte'); return; }
-
-    hideError();
-    btn.disabled = true;
-    currentSeed = Date.now(); // seed de ruído muda a cada geração
-
-    document.getElementById('art-section').style.display = 'none';
-    document.getElementById('analysis-section').style.display = 'none';
-    document.getElementById('wallet-section').style.display = 'none';
-
-    try {
-      // Buscar dados da wallet se fornecida
-      let walletData = { balance: 0, txCount: 0, profile: 'anonymous' };
-
-      if (walletAddr && walletAddr.length === 42 && walletAddr.startsWith('0x')) {
-        setStatus('▓ LENDO DADOS ON-CHAIN...', true);
-        try {
-          const balRes = await fetch(RPC, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getBalance',params:[walletAddr,'latest']})
-          });
-          const balData = await balRes.json();
-          const balance = Number(BigInt(balData.result || '0x0')) / 1e18;
-
-          // txs
-          const apiUrl = `https://api.etherscan.io/v2/api?chainid=8453&module=account&action=txlist&address=${walletAddr}&page=1&offset=20&sort=desc&apikey=${BASESCAN_KEY}`;
-          let txs = [];
-          try {
-            const r = await fetch('https://corsproxy.io/?'+encodeURIComponent(apiUrl));
-            const j = await r.json();
-            if (Array.isArray(j.result)) txs = j.result;
-          } catch(e) {}
-
-          const contractCalls = txs.filter(tx => tx.input !== '0x').length;
-          let profile = 'anonymous';
-          if (balance > 10) profile = 'whale';
-          else if (contractCalls > 10) profile = 'trader';
-          else if (txs.length < 5 && balance > 0) profile = 'holder';
-          else if (txs.length > 15 && contractCalls > txs.length * 0.7) profile = 'bot';
-
-          walletData = { balance, txCount: txs.length, profile };
-
-          document.getElementById('w-balance').textContent = balance.toFixed(4) + ' ETH';
-          document.getElementById('w-txcount').textContent = txs.length >= 20 ? '20+' : txs.length;
-          document.getElementById('w-profile').textContent = profile.toUpperCase();
-          document.getElementById('wallet-section').style.display = 'block';
-
-        } catch(e) { console.warn('wallet fetch falhou:', e); }
-      }
-
-      setStatus('▓ AGENTE INTERPRETANDO...', true);
-
-      // GROQ — gerar mensagem crítica estilo Banksy
-      const prompt = `Você é um agente de arte crítica social no estilo de Banksy.
-
-Analise esta notícia/situação e crie uma mensagem de arte de rua poderosa:
-
-NOTÍCIA/FRASE: "${news}"
-${walletAddr ? `DADOS DA WALLET: saldo ${walletData.balance.toFixed(4)} ETH, ${walletData.txCount} transações, perfil: ${walletData.profile}` : ''}
-
-Responda SOMENTE em JSON válido, sem markdown, sem explicação:
-{
-  "message": "frase curta e impactante para o stencil (máx 6 palavras, em português, maiúsculas, estilo Banksy)",
-  "subMessage": "mensagem secundária mais longa explicando a crítica (máx 15 palavras, em português)",
-  "theme": "uma palavra: money|power|freedom|surveillance|inequality|war|hope",
-  "critique": "parágrafo curto explicando a crítica social por trás desta obra (2-3 frases em português)"
-}`;
-
-      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method:'POST',
-        headers:{ 'Authorization':`Bearer ${GROQ_KEY}`, 'Content-Type':'application/json' },
-        body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages:[{role:'user',content:prompt}], max_tokens:300, temperature:0.8 })
-      });
-
-      const groqData = await groqRes.json();
-
-      let artMessage = { message: 'O SISTEMA FALHOU', subMessage: 'mas você ainda está aqui', theme: 'power', critique: 'A arte existe onde o sistema falha em explicar o que acontece.' };
-
-      if (groqData.choices?.[0]?.message?.content) {
-        try {
-          const raw = groqData.choices[0].message.content.replace(/```json|```/g, '').trim();
-          artMessage = JSON.parse(raw);
-        } catch(e) { console.warn('parse JSON falhou, usando default'); }
-      }
-
-      setStatus('▓ GERANDO OBRA...', true);
-
-      // Gerar arte
-      const canvas = document.getElementById('art-canvas');
-      const walletSeed = walletToSeed(walletAddr);
-
-      currentArtData = {
-        walletSeed,
-        wallet: walletAddr || null,
-        profile: walletData.profile,
-        message: artMessage.message || 'O SISTEMA FALHOU',
-        subMessage: artMessage.subMessage || '',
-        theme: artMessage.theme || 'power',
-      };
-
-      drawBanksyArt(canvas, currentArtData, currentSeed);
-
-      document.getElementById('art-section').style.display = 'block';
-      document.getElementById('analysis-text').textContent = artMessage.critique || '';
-      document.getElementById('analysis-section').style.display = 'block';
-
-      setStatus('', false);
-
-    } catch(err) {
-      setStatus('', false);
-      showError(err.message || 'erro desconhecido');
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
-  function downloadArt() {
-    const canvas = document.getElementById('art-canvas');
-    const link = document.createElement('a');
-    link.download = 'banksy-' + Date.now() + '.png';
-    link.href = canvas.toDataURL('png');
-    link.click();
-  }
-
-  document.getElementById('news-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.ctrlKey) generateArt();
+  // Linha do gráfico
+  ctx.strokeStyle=red(0.9);ctx.lineWidth=2.5;
+  ctx.beginPath();
+  const pts=[[0,70],[20,55],[35,65],[50,40],[65,50],[80,20],[95,30],[115,5]];
+  pts.forEach(([px,py],i)=>{
+    if(i===0)ctx.moveTo(gx+px,gy-80+py);
+    else ctx.lineTo(gx+px,gy-80+py);
   });
+  ctx.stroke();
+  // Área abaixo
+  ctx.fillStyle=red(0.08);
+  ctx.beginPath();
+  pts.forEach(([px,py],i)=>{
+    if(i===0)ctx.moveTo(gx+px,gy-80+py);
+    else ctx.lineTo(gx+px,gy-80+py);
+  });
+  ctx.lineTo(gx+115,gy+20);ctx.lineTo(gx,gy+20);ctx.fill();
+  // Seta para cima
+  ctx.fillStyle=red();
+  ctx.beginPath();
+  ctx.moveTo(gx+115,gy-80+5);
+  ctx.lineTo(gx+108,gy-80+18);
+  ctx.lineTo(gx+122,gy-80+18);
+  ctx.fill();
+}
+
+function drawHolder(ctx,cx,cy,rand,nr,ink,red){
+  drawHumanBody(ctx,cx,cy,ink);
+  drawHead(ctx,cx,cy,ink);
+
+  // Rosto preocupado
+  ctx.fillStyle='rgba(240,230,210,0.3)';
+  ctx.beginPath();ctx.ellipse(cx,cy-75,16,20,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=ink(0.8);ctx.lineWidth=1.5;
+  // Sobrancelhas franzidas
+  ctx.beginPath();ctx.moveTo(cx-10,cy-85);ctx.quadraticCurveTo(cx-6,cy-90,cx-2,cy-86);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+2,cy-86);ctx.quadraticCurveTo(cx+6,cy-90,cx+10,cy-85);ctx.stroke();
+
+  // Braços abraçando cofre
+  ctx.fillStyle=ink();
+  ctx.beginPath();
+  ctx.moveTo(cx+22,cy-30);
+  ctx.bezierCurveTo(cx+50,cy-10,cx+80,cy+10,cx+85,cy+40);
+  ctx.lineTo(cx+74,cy+44);
+  ctx.bezierCurveTo(cx+68,cy+12,cx+42,cy-6,cx+14,cy-22);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx-22,cy-30);
+  ctx.bezierCurveTo(cx-45,cy-5,cx-70,cy+20,cx-68,cy+60);
+  ctx.lineTo(cx-57,cy+58);
+  ctx.bezierCurveTo(cx-58,cy+20,cx-38,cy-2,cx-14,cy-22);
+  ctx.fill();
+
+  // Cofre detalhado
+  const sx=cx+30, sy=cy-10;
+  ctx.fillStyle=ink(0.8);
+  ctx.beginPath();
+  ctx.roundRect(sx,sy,80,90,6);
+  ctx.fill();
+  // Detalhe metálico
+  ctx.fillStyle=ink(0.4);
+  ctx.beginPath();ctx.roundRect(sx+6,sy+6,68,78,4);ctx.fill();
+  // Roda do cofre
+  ctx.strokeStyle='rgba(200,190,170,0.8)';ctx.lineWidth=4;
+  ctx.beginPath();ctx.arc(sx+40,sy+40,18,0,Math.PI*2);ctx.stroke();
+  for(let i=0;i<6;i++){
+    const a=i*Math.PI/3;
+    ctx.beginPath();
+    ctx.moveTo(sx+40,sy+40);
+    ctx.lineTo(sx+40+Math.cos(a)*16,sy+40+Math.sin(a)*16);
+    ctx.stroke();
+  }
+  ctx.fillStyle='rgba(180,170,150,0.9)';
+  ctx.beginPath();ctx.arc(sx+40,sy+40,6,0,Math.PI*2);ctx.fill();
+  // Pé do cofre
+  ctx.fillStyle=ink(0.6);
+  ctx.fillRect(sx+5,sy+90,70,8);
+
+  // Cadeado
+  ctx.strokeStyle=red(0.8);ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.arc(sx+40,sy+72,7,Math.PI,0);ctx.stroke();
+  ctx.fillStyle=red(0.8);
+  ctx.fillRect(sx+33,sy+72,14,10);
+}
+
+function drawBot(ctx,cx,cy,rand,nr,ink,red){
+  // Corpo robótico
+  ctx.fillStyle=ink(0.85);
+  ctx.beginPath();ctx.roundRect(cx-30,cy-60,60,90,4);ctx.fill();
+  // Cabeça quadrada
+  ctx.beginPath();ctx.roundRect(cx-28,cy-100,56,46,6);ctx.fill();
+  // Antena
+  ctx.strokeStyle=ink();ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(cx,cy-100);ctx.lineTo(cx,cy-130);ctx.stroke();
+  ctx.fillStyle=red();
+  ctx.beginPath();ctx.arc(cx,cy-133,6,0,Math.PI*2);ctx.fill();
+  // Brilho antena
+  ctx.fillStyle='rgba(255,150,150,0.5)';
+  ctx.beginPath();ctx.arc(cx,cy-133,10,0,Math.PI*2);ctx.fill();
+
+  // Visor
+  ctx.fillStyle='rgba(0,200,255,0.15)';
+  ctx.beginPath();ctx.roundRect(cx-20,cy-93,40,20,3);ctx.fill();
+  ctx.strokeStyle='rgba(0,200,255,0.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(cx-20,cy-93,40,20,3);ctx.stroke();
+
+  // Olhos LED
+  ctx.fillStyle=red(0.9);
+  ctx.beginPath();ctx.arc(cx-9,cy-83,5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx+9,cy-83,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,200,0.7)';
+  ctx.beginPath();ctx.arc(cx-7,cy-85,2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(cx+11,cy-85,2,0,Math.PI*2);ctx.fill();
+
+  // Painel frontal
+  ctx.fillStyle=ink(0.3);
+  ctx.beginPath();ctx.roundRect(cx-18,cy-52,36,50,3);ctx.fill();
+  // Botões
+  const btnColors=['rgba(0,200,100,0.8)','rgba(200,0,0,0.8)','rgba(200,180,0,0.8)'];
+  btnColors.forEach((c,i)=>{
+    ctx.fillStyle=c;
+    ctx.beginPath();ctx.arc(cx-10+i*10,cy-38,4,0,Math.PI*2);ctx.fill();
+  });
+
+  // Braços mecânicos
+  ctx.strokeStyle=ink(0.8);ctx.lineWidth=8;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx-30,cy-40);ctx.lineTo(cx-60,cy-20);ctx.lineTo(cx-70,cy+10);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+30,cy-40);ctx.lineTo(cx+60,cy-20);ctx.lineTo(cx+70,cy+10);ctx.stroke();
+  // Pinças
+  ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(cx-70,cy+10);ctx.lineTo(cx-80,cy+2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-70,cy+10);ctx.lineTo(cx-78,cy+22);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+70,cy+10);ctx.lineTo(cx+80,cy+2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+70,cy+10);ctx.lineTo(cx+78,cy+22);ctx.stroke();
+
+  // Pernas
+  ctx.lineWidth=10;
+  ctx.beginPath();ctx.moveTo(cx-15,cy+30);ctx.lineTo(cx-18,cy+80);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+15,cy+30);ctx.lineTo(cx+18,cy+80);ctx.stroke();
+  // Pés
+  ctx.fillStyle=ink(0.8);
+  ctx.beginPath();ctx.roundRect(cx-30,cy+80,24,12,3);ctx.fill();
+  ctx.beginPath();ctx.roundRect(cx+6,cy+80,24,12,3);ctx.fill();
+
+  // Código binário ao redor
+  ctx.font='10px Share Tech Mono';
+  ctx.fillStyle=ink(0.15);
+  const bits=['01001010','10110001','00111010','11001101','01010111'];
+  bits.forEach((b,i)=>{
+    ctx.fillText(b,cx+90,cy-80+i*22);
+    ctx.fillText(b.split('').reverse().join(''),cx-130,cy-80+i*22);
+  });
+}
+
+function drawAnonymous(ctx,cx,cy,rand,nr,ink,red){
+  // Capuz e corpo
+  ctx.fillStyle=ink(0.9);
+  // Capuz
+  ctx.beginPath();
+  ctx.moveTo(cx-35,cy-40);
+  ctx.bezierCurveTo(cx-45,cy-80,cx-30,cy-120,cx,cy-125);
+  ctx.bezierCurveTo(cx+30,cy-120,cx+45,cy-80,cx+35,cy-40);
+  ctx.fill();
+  // Corpo
+  ctx.beginPath();
+  ctx.moveTo(cx-35,cy-40);
+  ctx.bezierCurveTo(cx-50,cy,cx-48,cy+50,cx-35,cy+100);
+  ctx.lineTo(cx+35,cy+100);
+  ctx.bezierCurveTo(cx+48,cy+50,cx+50,cy,cx+35,cy-40);
+  ctx.fill();
+  // Sombra do rosto no capuz
+  ctx.fillStyle='rgba(30,25,20,0.85)';
+  ctx.beginPath();
+  ctx.moveTo(cx-20,cy-100);
+  ctx.bezierCurveTo(cx-25,cy-70,cx-20,cy-50,cx,cy-48);
+  ctx.bezierCurveTo(cx+20,cy-50,cx+25,cy-70,cx+20,cy-100);
+  ctx.fill();
+
+  // Olhos visíveis na sombra
+  ctx.fillStyle=red(0.9);
+  ctx.beginPath();ctx.ellipse(cx-8,cy-75,5,3,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx+8,cy-75,5,3,0,0,Math.PI*2);ctx.fill();
+
+  // Pernas
+  ctx.fillStyle=ink(0.85);
+  ctx.beginPath();
+  ctx.moveTo(cx-25,cy+100);ctx.bezierCurveTo(cx-28,cy+130,cx-25,cy+155,cx-22,cy+170);
+  ctx.lineTo(cx-10,cy+170);ctx.bezierCurveTo(cx-12,cy+155,cx-10,cy+130,cx-5,cy+100);ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx+25,cy+100);ctx.bezierCurveTo(cx+28,cy+130,cx+25,cy+155,ctx.moveTo,cy+170);
+  ctx.moveTo(cx+25,cy+100);ctx.bezierCurveTo(cx+28,cy+130,cx+25,cy+155,cx+22,cy+170);
+  ctx.lineTo(cx+10,cy+170);ctx.bezierCurveTo(cx+12,cy+155,cx+10,cy+130,cx+5,cy+100);ctx.fill();
+  // Sapatos
+  ctx.beginPath();ctx.ellipse(cx-16,cy+175,16,6,-.1,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx+16,cy+175,16,6,.1,0,Math.PI*2);ctx.fill();
+
+  // Braço com lata de spray
+  ctx.fillStyle=ink(0.85);
+  ctx.beginPath();
+  ctx.moveTo(cx+35,cy-20);
+  ctx.bezierCurveTo(cx+65,cy,cx+80,cy+30,cx+78,cy+55);
+  ctx.lineTo(cx+67,cy+52);
+  ctx.bezierCurveTo(cx+68,cy+28,cx+55,cy+2,cx+27,cy-12);
+  ctx.fill();
+  // Lata de spray detalhada
+  const sx=cx+75, sy=cy+55;
+  ctx.fillStyle=ink(0.7);
+  ctx.beginPath();ctx.roundRect(sx-8,sy-35,16,36,4);ctx.fill();
+  ctx.fillStyle=red(0.85);
+  ctx.beginPath();ctx.roundRect(sx-8,sy-40,16,10,2);ctx.fill();
+  // Bico da lata
+  ctx.fillStyle=ink(0.6);
+  ctx.beginPath();ctx.roundRect(sx-2,sy-46,4,8,1);ctx.fill();
+
+  // Spray saindo em leque
+  for(let i=0;i<25;i++){
+    const angle=-0.6+nr()*1.2;
+    const dist=20+nr()*60;
+    const px=sx+2+Math.cos(angle)*dist;
+    const py=sy-46-Math.sin(Math.abs(angle))*dist*0.3+nr()*10;
+    const a=0.6-dist/80;
+    ctx.fillStyle=red(Math.max(0,a));
+    ctx.beginPath();ctx.arc(px,py,nr()*4+0.5,0,Math.PI*2);ctx.fill();
+  }
+  // Respingo no chão
+  for(let i=0;i<8;i++){
+    ctx.fillStyle=red(0.15+nr()*0.2);
+    ctx.beginPath();ctx.arc(sx+20+nr()*30,sy+nr()*15,nr()*3+1,0,Math.PI*2);ctx.fill();
+  }
+}
+
+function drawRat(ctx,x,y,dir,nr,ink,red){
+  ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
+  ctx.fillStyle=ink(0.85);
+  // Corpo
+  ctx.beginPath();ctx.ellipse(0,0,20,11,-.1,0,Math.PI*2);ctx.fill();
+  // Cabeça
+  ctx.beginPath();ctx.ellipse(22,-2,11,9,.1,0,Math.PI*2);ctx.fill();
+  // Nariz
+  ctx.fillStyle=ink(0.5);
+  ctx.beginPath();ctx.ellipse(32,0,3,2.5,0,0,Math.PI*2);ctx.fill();
+  // Orelha
+  ctx.fillStyle=ink(0.7);
+  ctx.beginPath();ctx.ellipse(18,-10,5,7,-.3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(200,150,150,0.4)';
+  ctx.beginPath();ctx.ellipse(18,-10,3,5,-.3,0,Math.PI*2);ctx.fill();
+  // Olho
+  ctx.fillStyle=red(0.9);
+  ctx.beginPath();ctx.arc(26,-5,2.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.beginPath();ctx.arc(27,-6,1,0,Math.PI*2);ctx.fill();
+  // Bigodes
+  ctx.strokeStyle=ink(0.4);ctx.lineWidth=0.8;
+  [[-4,2],[0,1],[4,3]].forEach(([oy,len])=>{
+    ctx.beginPath();ctx.moveTo(32,oy);ctx.lineTo(32+len*6,oy-len);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(32,oy);ctx.lineTo(32-len*2,oy+len*0.5);ctx.stroke();
+  });
+  // Rabo
+  ctx.strokeStyle=ink(0.5);ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-18,2);
+  ctx.bezierCurveTo(-28,-5,-35,-15,-25,-25);
+  ctx.stroke();
+  // Patas
+  ctx.fillStyle=ink(0.6);
+  [[-8,10],[-2,11],[8,10],[14,11]].forEach(([px,py])=>{
+    ctx.beginPath();ctx.ellipse(px,py,4,3,0,0,Math.PI*2);ctx.fill();
+  });
+  ctx.restore();
+}
+
+function drawBalloon(ctx,x,y,nr,red){
+  ctx.save();
+  // Sombra do balão
+  ctx.fillStyle='rgba(150,0,0,0.1)';
+  ctx.beginPath();ctx.ellipse(x+8,y+8,28,32,0,0,Math.PI*2);ctx.fill();
+  // Balão coração
+  ctx.fillStyle=red(0.85);
+  const s=25;
+  ctx.beginPath();
+  ctx.moveTo(x,y+s*0.3);
+  ctx.bezierCurveTo(x,y,x-s,y,x-s,y-s*0.35);
+  ctx.bezierCurveTo(x-s,y-s*0.85,x,y-s*0.85,x,y-s*0.35);
+  ctx.bezierCurveTo(x,y-s*0.85,x+s,y-s*0.85,x+s,y-s*0.35);
+  ctx.bezierCurveTo(x+s,y,x,y,x,y+s*0.3);
+  ctx.fill();
+  // Brilho
+  ctx.fillStyle='rgba(255,150,150,0.3)';
+  ctx.beginPath();ctx.ellipse(x-8,y-s*0.5,8,5,-.3,0,Math.PI*2);ctx.fill();
+  // Fio
+  ctx.strokeStyle='rgba(50,45,40,0.6)';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(x,y+s*0.3);
+  ctx.bezierCurveTo(x+nr()*10-5,y+s*0.3+30,x+nr()*10-5,y+s*0.3+60,x+nr()*6-3,y+s*0.3+90);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawScenery(ctx,W,H,nr,ink,profile){
+  // Calçada / chão
+  const groundY=H-60;
+  ctx.fillStyle=ink(0.08);
+  ctx.fillRect(0,groundY,W,H-groundY);
+  // Linha do chão
+  ctx.strokeStyle=ink(0.12);ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,groundY);ctx.lineTo(W,groundY);ctx.stroke();
+  // Marcas no calçamento
+  for(let i=0;i<6;i++){
+    ctx.strokeStyle=ink(0.05);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(i*(W/6),groundY);ctx.lineTo(i*(W/6),H);ctx.stroke();
+  }
+
+  // Parede de tijolos no fundo (sutil)
+  ctx.strokeStyle=ink(0.04);ctx.lineWidth=0.8;
+  for(let row=0;row<8;row++){
+    const offset=(row%2)*40;
+    for(let col=-1;col<W/80+1;col++){
+      ctx.strokeRect(col*80+offset,row*30,78,28);
+    }
+  }
+}
+
+function renderArt(canvas,artData,noiseSeed){
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  const rand=seededRand(artData.walletSeed);
+  const nr=seededRand(noiseSeed);
+  const ink=(a=1)=>`rgba(20,18,15,${a})`;
+  const red=(a=1)=>`rgba(180,0,0,${a})`;
+
+  // 1. Textura de parede
+  drawWallTexture(ctx,W,H,nr);
+
+  // 2. Cenário
+  drawScenery(ctx,W,H,nr,ink,artData.profile);
+
+  // 3. Figura principal
+  const figX=W*0.28, figY=H*0.52;
+  drawDetailedFigure(ctx,figX,figY,artData.profile,rand,nr);
+
+  // 4. Ratos (2-4)
+  const numRats=2+Math.floor(rand()*3);
+  for(let i=0;i<numRats;i++){
+    const rx=50+nr()*(W-200);
+    const ry=H-55-nr()*30;
+    drawRat(ctx,rx,ry,nr()>0.5?1:-1,nr,ink,red);
+  }
+
+  // 5. Balão coração (60% das vezes)
+  if(rand()>0.4){
+    const bx=W*0.15+nr()*100;
+    const by=H*0.18+nr()*80;
+    drawBalloon(ctx,bx,by,nr,red);
+  }
+
+  // 6. Efeito stencil — borda difusa
+  applyStencilEffect(ctx,W,H,nr);
+
+  // 7. Assinatura discreta
+  ctx.font='10px Share Tech Mono';
+  ctx.fillStyle=ink(0.12);
+  ctx.fillText('virus4d · banksy · '+(artData.wallet?artData.wallet.slice(0,10)+'...':'anonymous'),16,H-12);
+
+  // 8. Vinheta nas bordas
+  const vg=ctx.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*0.85);
+  vg.addColorStop(0,'rgba(0,0,0,0)');
+  vg.addColorStop(1,'rgba(20,18,15,0.18)');
+  ctx.fillStyle=vg;
+  ctx.fillRect(0,0,W,H);
+}
+
+// ─── MAIN ────────────────────────────────────────────────────────
+
+let currentArtData=null;
+let currentNoiseSeed=0;
+
+function setStatus(msg,show){const e=document.getElementById('status');e.textContent=msg;e.style.display=show?'block':'none'}
+function showErr(msg){const e=document.getElementById('errbox');e.textContent='// ERROR: '+msg;e.style.display='block'}
+function hideErr(){document.getElementById('errbox').style.display='none'}
+function setProgress(pct,label){
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent='// '+label;
+}
+
+async function generateArt(){
+  const news=document.getElementById('news-input').value.trim();
+  const walletAddr=document.getElementById('wallet-input').value.trim();
+  const btn=document.getElementById('gen-btn');
+
+  if(!news && (!walletAddr||walletAddr.length!==42)){
+    showErr('add a news headline or a wallet address to generate artwork');
+    return;
+  }
+
+  hideErr();
+  btn.disabled=true;
+  currentNoiseSeed=Date.now();
+
+  document.getElementById('art-section').style.display='none';
+  document.getElementById('msg-section').style.display='none';
+  document.getElementById('progress-wrap').style.display='block';
+  setProgress(0,'starting...');
+
+  try {
+    let walletData={balance:0,txCount:0,profile:'anonymous'};
+
+    // Buscar dados da wallet
+    if(walletAddr&&walletAddr.length===42&&walletAddr.startsWith('0x')){
+      setProgress(15,'reading on-chain data...');
+      try{
+        const br=await fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getBalance',params:[walletAddr,'latest']})});
+        const bd=await br.json();
+        const balance=Number(BigInt(bd.result||'0x0'))/1e18;
+        setProgress(30,'fetching transaction history...');
+        const apiUrl=`https://api.etherscan.io/v2/api?chainid=8453&module=account&action=txlist&address=${walletAddr}&page=1&offset=20&sort=desc&apikey=${BASESCAN_KEY}`;
+        let txs=[];
+        try{
+          const r=await fetch('https://corsproxy.io/?'+encodeURIComponent(apiUrl));
+          const j=await r.json();
+          if(Array.isArray(j.result))txs=j.result;
+        }catch(e){}
+        const cc=txs.filter(tx=>tx.input!=='0x').length;
+        let profile='anonymous';
+        if(balance>10)profile='whale';
+        else if(cc>10)profile='trader';
+        else if(txs.length<5&&balance>0)profile='holder';
+        else if(txs.length>15&&cc>txs.length*0.7)profile='bot';
+        walletData={balance,txCount:txs.length,profile};
+      }catch(e){console.warn('wallet error:',e);}
+    }
+
+    setProgress(50,'agent interpreting...');
+
+    // Groq — gerar crítica
+    let artMessage={theme:'power',critique:'Art exists where the system fails to explain itself.'};
+
+    if(news){
+      try{
+        const prompt=`You are a critical art agent in the style of Banksy.
+
+Analyze this news/situation and create a powerful social critique:
+
+NEWS: "${news}"
+${walletAddr?`WALLET DATA: balance ${walletData.balance.toFixed(4)} ETH, ${walletData.txCount} transactions, profile: ${walletData.profile}`:''}
+
+Respond ONLY with valid JSON, no markdown, no explanation:
+{"theme":"one word: money|power|freedom|surveillance|inequality|war|hope","critique":"2-3 sentences in English explaining the social critique behind this artwork"}`;
+
+        const gr=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+          method:'POST',
+          headers:{'Authorization':`Bearer ${GROQ_KEY}`,'Content-Type':'application/json'},
+          body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:prompt}],max_tokens:200,temperature:0.7})
+        });
+        const gd=await gr.json();
+        if(gd.choices?.[0]?.message?.content){
+          try{
+            const raw=gd.choices[0].message.content.replace(/```json|```/g,'').trim();
+            artMessage={...artMessage,...JSON.parse(raw)};
+          }catch(e){}
+        }
+      }catch(e){console.warn('groq error:',e);}
+    }
+
+    setProgress(75,'rendering artwork...');
+
+    currentArtData={
+      walletSeed:walletToSeed(walletAddr),
+      wallet:walletAddr||null,
+      profile:walletData.profile,
+      theme:artMessage.theme||'power',
+    };
+
+    // Renderizar
+    const canvas=document.getElementById('art-canvas');
+    renderArt(canvas,currentArtData,currentNoiseSeed);
+
+    setProgress(100,'done');
+
+    document.getElementById('art-section').style.display='block';
+    if(artMessage.critique){
+      document.getElementById('msg-text').textContent=artMessage.critique;
+      document.getElementById('msg-section').style.display='block';
+    }
+    document.getElementById('progress-wrap').style.display='none';
+
+  }catch(err){
+    showErr(err.message||'unknown error');
+    document.getElementById('progress-wrap').style.display='none';
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+function regenArt(){
+  if(!currentArtData)return;
+  currentNoiseSeed=Date.now();
+  const canvas=document.getElementById('art-canvas');
+  renderArt(canvas,currentArtData,currentNoiseSeed);
+}
+
+function downloadArt(){
+  const canvas=document.getElementById('art-canvas');
+  const link=document.createElement('a');
+  link.download='banksy-'+Date.now()+'.png';
+  link.href=canvas.toDataURL('png');
+  link.click();
+}
 </script>
 </body>
 </html>
