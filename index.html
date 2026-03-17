@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>banksy // virus4d</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --red: #cc0000; --red-dim: #880000;
+      --bg: #000000; --bg2: #080808;
+      --border: #1a1a1a; --text: #666666; --text-bright: #cccccc;
+      --green: #00cc44; --orange: #cc6600;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Share Tech Mono',monospace; min-height:100vh; }
+    body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px); pointer-events:none; z-index:999; }
+    .container { max-width:900px; margin:0 auto; padding:36px 24px; }
+
+    header { margin-bottom:40px; border-bottom:1px solid var(--border); padding-bottom:20px; }
+    .logo { font-family:'Orbitron',monospace; font-size:24px; font-weight:900; color:var(--red); letter-spacing:3px; animation:flicker 6s infinite; }
+    .tagline { font-size:10px; color:#222; letter-spacing:3px; margin-top:5px; }
+    .badges { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+    .badge { font-size:9px; letter-spacing:2px; padding:3px 10px; border:1px solid #0052ff44; color:#0052ff; }
+    .badge.red { border-color:#cc000044; color:var(--red); }
+    @keyframes flicker { 0%,94%,100%{opacity:1} 95%{opacity:.3} 96%{opacity:1} 98%{opacity:.5} 99%{opacity:1} }
+
+    .input-section { margin-bottom:28px; }
+    .section-label { font-size:9px; color:#333; letter-spacing:3px; margin-bottom:10px; }
+    .prompt-line { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .prompt-label { color:var(--red); font-size:12px; white-space:nowrap; min-width:80px; }
+    .input-wrapper { display:flex; flex:1; border:1px solid #1a1a1a; background:var(--bg2); }
+    .input-wrapper:focus-within { border-color:var(--red-dim); }
+    input[type="text"], textarea { flex:1; background:transparent; border:none; outline:none; color:var(--text-bright); font-family:'Share Tech Mono',monospace; font-size:12px; padding:13px 14px; letter-spacing:1px; resize:none; }
+    input::placeholder, textarea::placeholder { color:#222; }
+    textarea { min-height:70px; width:100%; border:1px solid #1a1a1a; background:var(--bg2); }
+    textarea:focus { border-color:var(--red-dim); outline:none; }
+
+    .hint { font-size:10px; color:#222; letter-spacing:1px; margin-top:4px; margin-bottom:16px; }
+
+    button#generate-btn { background:var(--red); border:none; color:#000; font-family:'Orbitron',monospace; font-size:11px; font-weight:700; letter-spacing:2px; padding:14px 32px; cursor:pointer; transition:background 0.15s; width:100%; margin-top:8px; }
+    button#generate-btn:hover { background:#ff0000; }
+    button#generate-btn:disabled { background:#111; color:#333; cursor:not-allowed; }
+
+    #status-bar { display:none; font-size:10px; color:var(--red); letter-spacing:2px; margin-bottom:16px; animation:blink 1s infinite; }
+    #error-box { display:none; background:rgba(204,0,0,0.05); border:1px solid var(--red-dim); color:var(--red); font-size:11px; padding:12px 16px; margin-bottom:20px; letter-spacing:1px; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* CANVAS */
+    #art-section { display:none; margin-bottom:28px; }
+    .art-container { position:relative; background:#fff; border:4px solid #000; }
+    canvas { display:block; width:100%; }
+    .art-actions { display:flex; gap:8px; margin-top:10px; }
+    .btn-action { background:transparent; border:1px solid var(--border); color:#333; font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; padding:10px 20px; cursor:pointer; transition:all 0.15s; flex:1; }
+    .btn-action:hover { border-color:var(--red); color:var(--red); }
+    .btn-action.primary { border-color:var(--red); color:var(--red); }
+
+    /* ANALYSIS */
+    #analysis-section { display:none; margin-bottom:28px; }
+    .analysis-box { background:var(--bg2); border-left:3px solid var(--red); padding:16px; }
+    #analysis-text { font-size:11px; color:var(--text); line-height:1.8; white-space:pre-wrap; }
+
+    /* WALLET INFO */
+    #wallet-section { display:none; margin-bottom:28px; }
+    .wallet-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+    .stat-card { background:var(--bg2); padding:14px; border-left:2px solid var(--border); }
+    .stat-card label { font-size:8px; color:#333; letter-spacing:2px; display:block; margin-bottom:6px; }
+    .stat-card .val { font-family:'Orbitron',monospace; font-size:12px; color:var(--text-bright); }
+
+    footer { margin-top:40px; padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:9px; color:#1a1a1a; letter-spacing:2px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">BANKSY</div>
+    <div class="tagline">// arte crítica gerada por agentes on-chain · by virus4d</div>
+    <div class="badges">
+      <span class="badge">BASE · ETHEREUM</span>
+      <span class="badge red">⬡ INSPIRED BY BANKSY</span>
+    </div>
+  </header>
+
+  <div class="input-section">
+    <div class="section-label">// FONTE DE INSPIRAÇÃO</div>
+
+    <div class="prompt-line">
+      <span class="prompt-label">$&gt; notícia</span>
+    </div>
+    <textarea id="news-input" placeholder="cole uma notícia, titular ou frase que te impacta... ex: 'banco central aumenta juros pela 5a vez' ou 'bitcoin atinge nova máxima enquanto inflação dispara'"></textarea>
+    <div class="hint">// o agente vai transformar essa notícia em crítica visual</div>
+
+    <div class="prompt-line" style="margin-top:16px">
+      <span class="prompt-label">$&gt; wallet</span>
+      <div class="input-wrapper">
+        <input type="text" id="wallet-input" placeholder="0x endereço (opcional) — personaliza a obra com seus dados on-chain..." autocomplete="off" spellcheck="false"/>
+      </div>
+    </div>
+    <div class="hint">// opcional — sem wallet gera arte só pela notícia</div>
+
+    <button id="generate-btn" onclick="generateArt()">⬡ GERAR OBRA</button>
+  </div>
+
+  <div id="status-bar"></div>
+  <div id="error-box"></div>
+
+  <!-- WALLET INFO -->
+  <div id="wallet-section">
+    <div class="section-label">// IDENTIDADE ON-CHAIN</div>
+    <div class="wallet-grid">
+      <div class="stat-card"><label>SALDO</label><div class="val" id="w-balance">—</div></div>
+      <div class="stat-card"><label>TRANSAÇÕES</label><div class="val" id="w-txcount">—</div></div>
+      <div class="stat-card"><label>PERFIL</label><div class="val" style="font-size:10px" id="w-profile">—</div></div>
+    </div>
+  </div>
+
+  <!-- ART CANVAS -->
+  <div id="art-section">
+    <div class="section-label">// OBRA GERADA</div>
+    <div class="art-container">
+      <canvas id="art-canvas" width="800" height="600"></canvas>
+    </div>
+    <div class="art-actions">
+      <button class="btn-action" onclick="generateArt()">⬡ GERAR NOVA VERSÃO</button>
+      <button class="btn-action primary" onclick="downloadArt()">⬡ BAIXAR OBRA</button>
+    </div>
+  </div>
+
+  <!-- ANALYSIS -->
+  <div id="analysis-section">
+    <div class="section-label">// MENSAGEM DO AGENTE</div>
+    <div class="analysis-box">
+      <div id="analysis-text"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>banksy // virus4d · arte generativa on-chain</span>
+    <span>groq llm · base rpc · canvas api</span>
+  </footer>
+
+</div>
+
+<script>
+  const GROQ_KEY     = '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';
+  const BASESCAN_KEY = 'XH56ZMYSJTI64KY3V14NMWH7ZV6DFU951Z';
+  const RPC          = 'https://mainnet.base.org';
+
+  let currentSeed = 0;
+  let currentArtData = null;
+
+  function setStatus(msg, show) { const el=document.getElementById('status-bar'); el.textContent=msg; el.style.display=show?'block':'none'; }
+  function showError(msg) { const el=document.getElementById('error-box'); el.textContent='// ERRO: '+msg; el.style.display='block'; }
+  function hideError() { document.getElementById('error-box').style.display='none'; }
+
+  // Seeded random — mesma wallet = mesma estrutura, seed diferente = detalhes únicos
+  function seededRand(seed) {
+    let s = seed;
+    return function() {
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      return (s >>> 0) / 0xffffffff;
+    };
+  }
+
+  function walletToSeed(addr) {
+    if (!addr) return Math.floor(Math.random() * 999999);
+    let seed = 0;
+    for (let i = 0; i < addr.length; i++) {
+      seed = ((seed << 5) - seed) + addr.charCodeAt(i);
+      seed |= 0;
+    }
+    return Math.abs(seed);
+  }
+
+  function drawBanksyArt(canvas, artData, noiseSeed) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const rand = seededRand(artData.walletSeed);
+    const nrand = seededRand(noiseSeed);
+
+    // Background — textura de parede
+    ctx.fillStyle = '#f5f0e8';
+    ctx.fillRect(0, 0, W, H);
+
+    // Textura de parede (ruído)
+    for (let i = 0; i < 8000; i++) {
+      const x = nrand() * W;
+      const y = nrand() * H;
+      const size = nrand() * 3;
+      const alpha = nrand() * 0.08;
+      ctx.fillStyle = `rgba(${100+nrand()*50},${90+nrand()*40},${70+nrand()*40},${alpha})`;
+      ctx.fillRect(x, y, size, size);
+    }
+
+    // Manchas e imperfeições
+    for (let i = 0; i < 15; i++) {
+      const x = nrand() * W;
+      const y = nrand() * H;
+      ctx.beginPath();
+      ctx.arc(x, y, nrand() * 60 + 10, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,170,150,${nrand() * 0.05})`;
+      ctx.fill();
+    }
+
+    // Escolher composição baseada no perfil da wallet
+    const profile = artData.profile;
+    const theme = artData.theme;
+
+    // Elemento central — stencil baseado no perfil
+    drawCentralFigure(ctx, W, H, rand, nrand, profile, theme, artData);
+
+    // Mensagem crítica — texto spray
+    drawSprayText(ctx, W, H, nrand, artData.message, artData.subMessage);
+
+    // Detalhes Banksy — elementos extras
+    drawBanksyDetails(ctx, W, H, rand, nrand, theme);
+
+    // Assinatura
+    ctx.font = '11px Share Tech Mono';
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillText('virus4d · wallet-art · ' + (artData.wallet ? artData.wallet.slice(0,10)+'...' : 'anonymous'), 20, H - 15);
+  }
+
+  function drawCentralFigure(ctx, W, H, rand, nrand, profile, theme, artData) {
+    const cx = W * 0.35;
+    const cy = H * 0.5;
+
+    ctx.save();
+
+    // Sombra/spray base
+    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 200);
+    gradient.addColorStop(0, 'rgba(0,0,0,0.15)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(cx - 220, cy - 220, 440, 440);
+
+    // Figura baseada no perfil
+    if (profile === 'whale') {
+      drawWhale(ctx, cx, cy, rand);
+    } else if (profile === 'trader') {
+      drawTrader(ctx, cx, cy, rand);
+    } else if (profile === 'holder') {
+      drawHolder(ctx, cx, cy, rand);
+    } else if (profile === 'bot') {
+      drawBot(ctx, cx, cy, rand);
+    } else {
+      drawAnonymous(ctx, cx, cy, rand);
+    }
+
+    ctx.restore();
+  }
+
+  function drawWhale(ctx, cx, cy, rand) {
+    // Homem de terno com baleia
+    ctx.fillStyle = '#111';
+    // corpo
+    ctx.fillRect(cx - 30, cy - 60, 60, 80);
+    // cabeça
+    ctx.beginPath(); ctx.arc(cx, cy - 80, 28, 0, Math.PI * 2); ctx.fill();
+    // gravata
+    ctx.fillStyle = '#cc0000';
+    ctx.beginPath(); ctx.moveTo(cx - 5, cy - 60); ctx.lineTo(cx + 5, cy - 60); ctx.lineTo(cx + 2, cy - 20); ctx.lineTo(cx - 2, cy - 20); ctx.fill();
+    // baleia acima
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.ellipse(cx + 80, cy - 120, 70, 35, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    // cauda baleia
+    ctx.beginPath(); ctx.moveTo(cx + 145, cy - 110); ctx.lineTo(cx + 170, cy - 90); ctx.lineTo(cx + 155, cy - 125); ctx.fill();
+    // cifrao
+    ctx.fillStyle = '#cc0000';
+    ctx.font = 'bold 28px serif';
+    ctx.fillText('$', cx + 60, cy - 105);
+  }
+
+  function drawTrader(ctx, cx, cy, rand) {
+    // Figura com gráfico e máscara de gás
+    ctx.fillStyle = '#111';
+    // corpo
+    ctx.fillRect(cx - 28, cy - 55, 56, 75);
+    // cabeça
+    ctx.beginPath(); ctx.arc(cx, cy - 75, 26, 0, Math.PI * 2); ctx.fill();
+    // máscara de gás
+    ctx.fillStyle = '#555';
+    ctx.beginPath(); ctx.arc(cx, cy - 70, 20, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.arc(cx, cy - 65, 8, 0, Math.PI * 2); ctx.fill();
+    // gráfico subindo
+    ctx.strokeStyle = '#cc0000'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx + 60, cy + 10);
+    ctx.lineTo(cx + 80, cy - 20);
+    ctx.lineTo(cx + 100, cy + 5);
+    ctx.lineTo(cx + 120, cy - 40);
+    ctx.lineTo(cx + 140, cy - 70);
+    ctx.stroke();
+    // seta
+    ctx.fillStyle = '#cc0000';
+    ctx.beginPath(); ctx.moveTo(cx + 135, cy - 85); ctx.lineTo(cx + 155, cy - 65); ctx.lineTo(cx + 125, cy - 65); ctx.fill();
+  }
+
+  function drawHolder(ctx, cx, cy, rand) {
+    // Figura abraçando cofre
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx - 28, cy - 50, 56, 70);
+    ctx.beginPath(); ctx.arc(cx, cy - 70, 25, 0, Math.PI * 2); ctx.fill();
+    // cofre
+    ctx.fillStyle = '#444';
+    ctx.fillRect(cx + 30, cy - 40, 55, 60);
+    ctx.fillStyle = '#cc0000';
+    ctx.beginPath(); ctx.arc(cx + 57, cy - 15, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.arc(cx + 57, cy - 15, 6, 0, Math.PI * 2); ctx.fill();
+    // braço abraçando
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.moveTo(cx + 25, cy - 30);
+    ctx.quadraticCurveTo(cx + 45, cy - 50, cx + 60, cy - 40);
+    ctx.lineWidth = 12; ctx.strokeStyle = '#111'; ctx.stroke();
+  }
+
+  function drawBot(ctx, cx, cy, rand) {
+    // Robô com código
+    ctx.fillStyle = '#222';
+    ctx.fillRect(cx - 35, cy - 60, 70, 80);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx - 25, cy - 80, 50, 30);
+    // olhos LED
+    ctx.fillStyle = '#cc0000';
+    ctx.beginPath(); ctx.arc(cx - 10, cy - 68, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 10, cy - 68, 7, 0, Math.PI * 2); ctx.fill();
+    // antena
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(cx, cy - 80); ctx.lineTo(cx, cy - 110); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy - 113, 5, 0, Math.PI * 2); ctx.fillStyle = '#cc0000'; ctx.fill();
+    // código
+    ctx.font = '10px Share Tech Mono';
+    ctx.fillStyle = '#cc0000';
+    const lines = ['01001', '10110', '00111', '11001'];
+    lines.forEach((l, i) => ctx.fillText(l, cx + 50, cy - 40 + i * 14));
+  }
+
+  function drawAnonymous(ctx, cx, cy, rand) {
+    // Figura com capuz e spray
+    ctx.fillStyle = '#111';
+    // corpo
+    ctx.beginPath();
+    ctx.moveTo(cx - 35, cy + 20);
+    ctx.lineTo(cx - 40, cy - 20);
+    ctx.lineTo(cx - 20, cy - 60);
+    ctx.lineTo(cx + 20, cy - 60);
+    ctx.lineTo(cx + 40, cy - 20);
+    ctx.lineTo(cx + 35, cy + 20);
+    ctx.fill();
+    // capuz
+    ctx.beginPath();
+    ctx.arc(cx, cy - 75, 30, 0, Math.PI * 2);
+    ctx.fill();
+    // sombra do rosto
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(cx, cy - 72, 20, 0.2, Math.PI - 0.2);
+    ctx.fill();
+    // lata de spray
+    ctx.fillStyle = '#555';
+    ctx.fillRect(cx + 38, cy - 30, 12, 30);
+    ctx.fillStyle = '#cc0000';
+    ctx.fillRect(cx + 36, cy - 35, 16, 8);
+    // spray saindo
+    for (let i = 0; i < 8; i++) {
+      ctx.beginPath();
+      ctx.arc(cx + 55 + rand()*20, cy - 30 + rand()*20, rand()*4+1, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(204,0,0,${0.3+rand()*0.5})`;
+      ctx.fill();
+    }
+  }
+
+  function drawSprayText(ctx, W, H, nrand, message, subMessage) {
+    // Área do texto — lado direito
+    const tx = W * 0.52;
+
+    // Efeito spray — texto com borda difusa
+    ctx.save();
+
+    // Sombra spray
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.shadowBlur = 8;
+
+    // Mensagem principal — grande, impactante
+    const words = message.toUpperCase().split(' ');
+    let line = '';
+    let lines = [];
+    let maxWidth = W * 0.42;
+
+    ctx.font = 'bold 36px Orbitron, monospace';
+    words.forEach(word => {
+      const test = line + (line ? ' ' : '') + word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+
+    // Limitar a 3 linhas
+    lines = lines.slice(0, 3);
+
+    // Spray vermelho para mensagem principal
+    lines.forEach((l, i) => {
+      // Ruído no texto (Banksy feel)
+      const offsetX = (nrand() - 0.5) * 4;
+      const offsetY = (nrand() - 0.5) * 4;
+
+      ctx.fillStyle = 'rgba(180,0,0,0.15)';
+      ctx.font = 'bold 37px Orbitron, monospace';
+      ctx.fillText(l, tx + offsetX + 2, 160 + i * 48 + offsetY + 2);
+
+      ctx.fillStyle = '#cc0000';
+      ctx.font = 'bold 36px Orbitron, monospace';
+      ctx.fillText(l, tx + offsetX, 160 + i * 48 + offsetY);
+    });
+
+    // Linha divisória spray
+    const lineY = 160 + lines.length * 48 + 20;
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 3 + nrand() * 2;
+    ctx.beginPath();
+    ctx.moveTo(tx, lineY);
+    ctx.lineTo(tx + maxWidth, lineY + (nrand()-0.5)*6);
+    ctx.stroke();
+
+    // Sub mensagem — menor, preto
+    if (subMessage) {
+      const subWords = subMessage.split(' ');
+      let subLine = '';
+      let subLines = [];
+      ctx.font = '16px Share Tech Mono';
+      subWords.forEach(word => {
+        const test = subLine + (subLine ? ' ' : '') + word;
+        if (ctx.measureText(test).width > maxWidth && subLine) {
+          subLines.push(subLine);
+          subLine = word;
+        } else { subLine = test; }
+      });
+      if (subLine) subLines.push(subLine);
+      subLines = subLines.slice(0, 4);
+
+      subLines.forEach((l, i) => {
+        const ox = (nrand()-0.5)*2;
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.font = '15px Share Tech Mono';
+        ctx.fillText(l, tx + ox, lineY + 35 + i * 22 + ox);
+      });
+    }
+
+    ctx.restore();
+  }
+
+  function drawBanksyDetails(ctx, W, H, rand, nrand, theme) {
+    // Ratos (clássico Banksy)
+    const numRats = Math.floor(2 + rand() * 3);
+    for (let i = 0; i < numRats; i++) {
+      const rx = 50 + nrand() * (W - 100);
+      const ry = H - 30 - nrand() * 60;
+      drawRat(ctx, rx, ry, nrand() > 0.5 ? 1 : -1);
+    }
+
+    // Balão coração (às vezes)
+    if (rand() > 0.5) {
+      drawBalloon(ctx, W * 0.15 + nrand() * 100, H * 0.2 + nrand() * 80, nrand);
+    }
+
+    // Faixa amarela de "CAUTION" (às vezes)
+    if (rand() > 0.6) {
+      ctx.save();
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = '#ffcc00';
+      ctx.rotate(-0.15);
+      for (let i = 0; i < 8; i++) {
+        if (i % 2 === 0) {
+          ctx.fillRect(-50 + i * 120, H * 0.7, 100, 30);
+        }
+      }
+      ctx.restore();
+    }
+
+    // Número do bloco ou dado on-chain como graffiti pequeno
+    ctx.font = '10px Share Tech Mono';
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillText('blk_' + Math.floor(nrand() * 99999999), 20, H - 30);
+  }
+
+  function drawRat(ctx, x, y, dir) {
+    ctx.save();
+    ctx.fillStyle = '#222';
+    ctx.scale(dir, 1);
+    const rx = x * dir;
+    // corpo
+    ctx.beginPath(); ctx.ellipse(rx, y, 15, 8, 0, 0, Math.PI * 2); ctx.fill();
+    // cabeça
+    ctx.beginPath(); ctx.ellipse(rx + 16 * dir * dir, y - 2, 8, 6, 0, 0, Math.PI * 2); ctx.fill();
+    // orelha
+    ctx.beginPath(); ctx.arc(rx + 20 * dir * dir, y - 7, 3, 0, Math.PI * 2); ctx.fill();
+    // olho
+    ctx.fillStyle = '#cc0000';
+    ctx.beginPath(); ctx.arc(rx + 22 * dir * dir, y - 3, 1.5, 0, Math.PI * 2); ctx.fill();
+    // rabo
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(rx - 14, y);
+    ctx.quadraticCurveTo(rx - 20, y - 10, rx - 10, y - 18);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawBalloon(ctx, x, y, nrand) {
+    ctx.save();
+    ctx.fillStyle = '#cc0000';
+    // coração
+    const s = 20;
+    ctx.beginPath();
+    ctx.moveTo(x, y + s * 0.3);
+    ctx.bezierCurveTo(x, y, x - s, y, x - s, y - s * 0.3);
+    ctx.bezierCurveTo(x - s, y - s * 0.8, x, y - s * 0.8, x, y - s * 0.3);
+    ctx.bezierCurveTo(x, y - s * 0.8, x + s, y - s * 0.8, x + s, y - s * 0.3);
+    ctx.bezierCurveTo(x + s, y, x, y, x, y + s * 0.3);
+    ctx.fill();
+    // fio
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, y + s * 0.3); ctx.lineTo(x + (nrand()-0.5)*10, y + s * 0.3 + 60); ctx.stroke();
+    ctx.restore();
+  }
+
+  async function generateArt() {
+    const news = document.getElementById('news-input').value.trim();
+    const walletAddr = document.getElementById('wallet-input').value.trim();
+    const btn = document.getElementById('generate-btn');
+
+    if (!news) { showError('adicione uma notícia ou frase para gerar a arte'); return; }
+
+    hideError();
+    btn.disabled = true;
+    currentSeed = Date.now(); // seed de ruído muda a cada geração
+
+    document.getElementById('art-section').style.display = 'none';
+    document.getElementById('analysis-section').style.display = 'none';
+    document.getElementById('wallet-section').style.display = 'none';
+
+    try {
+      // Buscar dados da wallet se fornecida
+      let walletData = { balance: 0, txCount: 0, profile: 'anonymous' };
+
+      if (walletAddr && walletAddr.length === 42 && walletAddr.startsWith('0x')) {
+        setStatus('▓ LENDO DADOS ON-CHAIN...', true);
+        try {
+          const balRes = await fetch(RPC, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_getBalance',params:[walletAddr,'latest']})
+          });
+          const balData = await balRes.json();
+          const balance = Number(BigInt(balData.result || '0x0')) / 1e18;
+
+          // txs
+          const apiUrl = `https://api.etherscan.io/v2/api?chainid=8453&module=account&action=txlist&address=${walletAddr}&page=1&offset=20&sort=desc&apikey=${BASESCAN_KEY}`;
+          let txs = [];
+          try {
+            const r = await fetch('https://corsproxy.io/?'+encodeURIComponent(apiUrl));
+            const j = await r.json();
+            if (Array.isArray(j.result)) txs = j.result;
+          } catch(e) {}
+
+          const contractCalls = txs.filter(tx => tx.input !== '0x').length;
+          let profile = 'anonymous';
+          if (balance > 10) profile = 'whale';
+          else if (contractCalls > 10) profile = 'trader';
+          else if (txs.length < 5 && balance > 0) profile = 'holder';
+          else if (txs.length > 15 && contractCalls > txs.length * 0.7) profile = 'bot';
+
+          walletData = { balance, txCount: txs.length, profile };
+
+          document.getElementById('w-balance').textContent = balance.toFixed(4) + ' ETH';
+          document.getElementById('w-txcount').textContent = txs.length >= 20 ? '20+' : txs.length;
+          document.getElementById('w-profile').textContent = profile.toUpperCase();
+          document.getElementById('wallet-section').style.display = 'block';
+
+        } catch(e) { console.warn('wallet fetch falhou:', e); }
+      }
+
+      setStatus('▓ AGENTE INTERPRETANDO...', true);
+
+      // GROQ — gerar mensagem crítica estilo Banksy
+      const prompt = `Você é um agente de arte crítica social no estilo de Banksy.
+
+Analise esta notícia/situação e crie uma mensagem de arte de rua poderosa:
+
+NOTÍCIA/FRASE: "${news}"
+${walletAddr ? `DADOS DA WALLET: saldo ${walletData.balance.toFixed(4)} ETH, ${walletData.txCount} transações, perfil: ${walletData.profile}` : ''}
+
+Responda SOMENTE em JSON válido, sem markdown, sem explicação:
+{
+  "message": "frase curta e impactante para o stencil (máx 6 palavras, em português, maiúsculas, estilo Banksy)",
+  "subMessage": "mensagem secundária mais longa explicando a crítica (máx 15 palavras, em português)",
+  "theme": "uma palavra: money|power|freedom|surveillance|inequality|war|hope",
+  "critique": "parágrafo curto explicando a crítica social por trás desta obra (2-3 frases em português)"
+}`;
+
+      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST',
+        headers:{ 'Authorization':`Bearer ${GROQ_KEY}`, 'Content-Type':'application/json' },
+        body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages:[{role:'user',content:prompt}], max_tokens:300, temperature:0.8 })
+      });
+
+      const groqData = await groqRes.json();
+
+      let artMessage = { message: 'O SISTEMA FALHOU', subMessage: 'mas você ainda está aqui', theme: 'power', critique: 'A arte existe onde o sistema falha em explicar o que acontece.' };
+
+      if (groqData.choices?.[0]?.message?.content) {
+        try {
+          const raw = groqData.choices[0].message.content.replace(/```json|```/g, '').trim();
+          artMessage = JSON.parse(raw);
+        } catch(e) { console.warn('parse JSON falhou, usando default'); }
+      }
+
+      setStatus('▓ GERANDO OBRA...', true);
+
+      // Gerar arte
+      const canvas = document.getElementById('art-canvas');
+      const walletSeed = walletToSeed(walletAddr);
+
+      currentArtData = {
+        walletSeed,
+        wallet: walletAddr || null,
+        profile: walletData.profile,
+        message: artMessage.message || 'O SISTEMA FALHOU',
+        subMessage: artMessage.subMessage || '',
+        theme: artMessage.theme || 'power',
+      };
+
+      drawBanksyArt(canvas, currentArtData, currentSeed);
+
+      document.getElementById('art-section').style.display = 'block';
+      document.getElementById('analysis-text').textContent = artMessage.critique || '';
+      document.getElementById('analysis-section').style.display = 'block';
+
+      setStatus('', false);
+
+    } catch(err) {
+      setStatus('', false);
+      showError(err.message || 'erro desconhecido');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function downloadArt() {
+    const canvas = document.getElementById('art-canvas');
+    const link = document.createElement('a');
+    link.download = 'banksy-' + Date.now() + '.png';
+    link.href = canvas.toDataURL('png');
+    link.click();
+  }
+
+  document.getElementById('news-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.ctrlKey) generateArt();
+  });
+</script>
+</body>
+</html>
