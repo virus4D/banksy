@@ -751,9 +751,6 @@ function renderArt(canvas,artData,noiseSeed){
 
 // ─── MAIN ────────────────────────────────────────────────────────
 
-let currentArtData=null;
-let currentNoiseSeed=0;
-
 function setStatus(msg,show){const e=document.getElementById('status');e.textContent=msg;e.style.display=show?'block':'none'}
 function showErr(msg){const e=document.getElementById('errbox');e.textContent='// ERROR: '+msg;e.style.display='block'}
 function hideErr(){document.getElementById('errbox').style.display='none'}
