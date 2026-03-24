@@ -718,18 +718,20 @@ function renderArt(canvas,artData,noiseSeed){
   const figX=W*0.28, figY=H*0.52;
   drawDetailedFigure(ctx,figX,figY,artData.profile,rand,nr);
 
-  // 4. Ratos (2-4)
-  const numRats=2+Math.floor(rand()*3);
-  for(let i=0;i<numRats;i++){
-    const rx=50+nr()*(W-200);
-    const ry=H-55-nr()*30;
-    drawRat(ctx,rx,ry,nr()>0.5?1:-1,nr,ink,red);
+  // 4. Ratos — solo para anonymous y bot
+  if(artData.profile==='anonymous'||artData.profile==='bot'||artData.profile==='holder'){
+    const numRats=1+Math.floor(rand()*2);
+    for(let i=0;i<numRats;i++){
+      const rx=80+nr()*(W-300);
+      const ry=H-55-nr()*20;
+      drawRat(ctx,rx,ry,nr()>0.5?1:-1,nr,ink,red);
+    }
   }
 
-  // 5. Balão coração (60% das vezes)
-  if(rand()>0.4){
-    const bx=W*0.15+nr()*100;
-    const by=H*0.18+nr()*80;
+  // 5. Balão coração — só para holder e anonymous
+  if((artData.profile==='holder'||artData.profile==='anonymous')&&rand()>0.4){
+    const bx=W*0.15+nr()*80;
+    const by=H*0.18+nr()*60;
     drawBalloon(ctx,bx,by,nr,red);
   }
 
@@ -799,11 +801,19 @@ async function generateArt(){
         }catch(e){}
         const cc=txs.filter(tx=>tx.input!=='0x').length;
         let profile='anonymous';
-        if(balance>10)profile='whale';
-        else if(cc>10)profile='trader';
-        else if(txs.length<5&&balance>0)profile='holder';
-        else if(txs.length>15&&cc>txs.length*0.7)profile='bot';
+        if(balance>5)profile='whale';
+        else if(balance>0.1&&cc>5)profile='trader';
+        else if(txs.length>10&&cc>txs.length*0.6)profile='bot';
+        else if(balance>0&&txs.length<=5)profile='holder';
+        else if(txs.length>3)profile='trader';
+        // Si no hay txs, usar seed de wallet para variar perfil
+        if(txs.length===0 && balance===0){
+          const profiles=['anonymous','holder','trader','bot','whale'];
+          const seedVal=walletToSeed(walletAddr);
+          profile=profiles[seedVal%profiles.length];
+        }
         walletData={balance,txCount:txs.length,profile};
+        console.log('profile detected:',profile,'balance:',balance,'txs:',txs.length,'contracts:',cc);
       }catch(e){console.warn('wallet error:',e);}
     }
 
